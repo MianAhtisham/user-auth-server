@@ -10,7 +10,7 @@ import todoRouter from "./routes/todoRoutes.js"
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 const MONGOURL = process.env.MONGO_URI;
 const SESSION_SECRET = process.env.SESSION_SECRET;
 
