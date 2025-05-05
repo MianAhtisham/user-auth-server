@@ -4,8 +4,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import session from "express-session";
 import MongoStore from "connect-mongo";
-import userRoutes from "./routes/userRoutes.js";
-import todoRouter from "./routes/todoRoutes.js"
+import userRoutes from "../routes/userRoutes.js";
+import todoRouter from "../routes/todoRoutes.js"
 
 dotenv.config();
 
