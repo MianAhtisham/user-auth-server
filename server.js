@@ -1,4 +1,3 @@
-// server.js
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -11,16 +10,15 @@ import todoRouter from "./routes/todoRoutes.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8000;
 const MONGOURL = process.env.MONGO_URI;
 const SESSION_SECRET = process.env.SESSION_SECRET;
 
-// Middleware
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "http://localhost:3000", // change this for production
   credentials: true,
 }));
 app.use(express.json());
+
 app.use(session({
   secret: SESSION_SECRET,
   resave: false,
@@ -32,19 +30,34 @@ app.use(session({
   },
 }));
 
-// Routes
 app.use("/api", userRoutes);
 app.use("/api", todoRouter);
 
-// Connect to Mongo and start server (for local dev)
-mongoose
-  .connect(MONGOURL)
-  .then(() => {
-    console.log("DB Connected Successfully.");
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  })
-  .catch((error) => console.log("Error connecting to MongoDB:", error));
+// For Vercel serverless — only connect once
+let isConnected = false;
+async function connectToDatabase() {
+  if (isConnected) return;
+  await mongoose.connect(MONGOURL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
+  isConnected = true;
+  console.log("MongoDB connected");
+}
 
-export default app;
+// Only run this if executed locally
+if (process.env.NODE_ENV !== "production") {
+  connectToDatabase().then(() => {
+    const PORT = process.env.PORT || 8000;
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  });
+}
+
+export async function handler(req, res) {
+  await connectToDatabase();
+  return app(req, res);
+}
+
+export default handler;
